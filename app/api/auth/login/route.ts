@@ -1,33 +1,28 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import User from "@/models/User";
-import bcrypt from "bcryptjs";
-import { login } from "@/lib/auth/jwt";
+import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { getDb } from '@/lib/db';
+import { login } from '@/lib/auth';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    await dbConnect();
-    const { email, password } = await req.json();
+    const { email, password } = await request.json();
 
     if (!email || !password) {
-      return NextResponse.json({ message: "Missing fields" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
     }
 
-    const user = await User.findOne({ email }).select("+password");
-    if (!user) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
+    const db = await getDb();
+    const user = await db.collection('users').findOne({ email });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
-    }
-
-    // Set JWT cookie
+    // Set the auth cookie
     await login({ id: user._id.toString(), email: user.email, name: user.name });
 
-    return NextResponse.json({ message: "Logged in successfully" });
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    return NextResponse.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email, name: user.name } }, { status: 200 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

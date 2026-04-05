@@ -1,35 +1,60 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import Task from "@/models/Task";
-import { getSession } from "@/lib/auth/jwt";
+import { NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { getSession } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
+import { isTaskVisibleOnDate, dateToString } from '@/lib/task-logic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    await dbConnect();
     const session = await getSession();
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const tasks = await Task.find({ userId: session.id });
-    return NextResponse.json(tasks);
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    const { searchParams } = new URL(request.url);
+    const dateParam = searchParams.get('date') || dateToString(new Date());
+    const targetDate = new Date(dateParam);
+
+    const db = await getDb();
+    const tasksRaw = await db.collection('tasks').find({ userId: session.user.id }).toArray();
+    
+    // Filter tasks based on logic (rollover, recurrence)
+    const visibleTasks = tasksRaw.filter(task => isTaskVisibleOnDate(task as any, targetDate));
+
+    return NextResponse.json({ tasks: visibleTasks });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    await dbConnect();
     const session = await getSession();
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const data = await req.json();
-    const task = await Task.create({
-      userId: session.id,
-      ...data,
+    const taskData = await request.json();
+    const { title, description, time, progress, type, date, daysOfWeek, annualDate } = taskData;
+
+    if (!title || !type) {
+      return NextResponse.json({ error: 'Title and Type are required' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const result = await db.collection('tasks').insertOne({
+      userId: session.user.id,
+      title,
+      description: description || '',
+      time: time || '00:00',
+      progress: progress || 0,
+      type,
+      date: date ? new Date(date) : undefined,
+      daysOfWeek: daysOfWeek || [],
+      annualDate: annualDate || undefined,
+      completedDates: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    return NextResponse.json(task, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 });
+    return NextResponse.json({ message: 'Task created', taskId: result.insertedId }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

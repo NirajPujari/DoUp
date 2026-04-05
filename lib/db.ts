@@ -1,51 +1,36 @@
-import mongoose from "mongoose";
+import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.DB_URL;
-const DB_NAME = process.env.DB_NAME;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define the DB_URL environment variable inside .env");
+if (!process.env.DB_URL) {
+  throw new Error('Please add your DB_URL to .env.local');
 }
 
-if (!DB_NAME) {
-  throw new Error("Please define the DB_NAME environment variable inside .env");
-}
+const uri = process.env.DB_URL;
+const options = {};
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections from growing exponentially
- * during API Route usage.
- */
-let cached = (global as any).mongoose;
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
-}
+if (process.env.NODE_ENV === 'development') {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  let globalWithMongo = global as typeof globalThis & {
+    _mongoClientPromise?: Promise<MongoClient>;
+  };
 
-async function dbConnect() {
-  if (cached.conn) {
-    return cached.conn;
+  if (!globalWithMongo._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    globalWithMongo._mongoClientPromise = client.connect();
   }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-      dbName: DB_NAME,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-
-  return cached.conn;
+  clientPromise = globalWithMongo._mongoClientPromise;
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
 
-export default dbConnect;
+export async function getDb() {
+  const connection = await clientPromise;
+  return connection.db(process.env.DB_NAME || 'Tasks');
+}
+
+export default clientPromise;
