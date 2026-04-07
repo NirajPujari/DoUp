@@ -42,7 +42,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-8 glass-morphism p-8 rounded-3xl shadow-2xl border border-white/20 animate-in fade-in zoom-in duration-500">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Create Account</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Start your journey with Luminous</p>
+          <p className="mt-2 text-sm text-muted-foreground">Start your journey with DoUp</p>
         </div>
 
         <form onSubmit={handleRegister} className="mt-8 space-y-4">

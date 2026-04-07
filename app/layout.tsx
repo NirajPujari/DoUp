@@ -9,10 +9,10 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Luminous Tasks",
+  title: "DoUp",
   description: "A premium, minimal task management system.",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Luminous Tasks" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "DoUp" },
 };
 
 export const viewport: Viewport = {

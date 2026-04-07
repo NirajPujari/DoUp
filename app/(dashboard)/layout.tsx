@@ -29,9 +29,9 @@ export default async function DashboardLayout({
       <aside className="hidden md:flex w-72 flex-col border-r bg-card/40 backdrop-blur-md sticky top-0 h-screen p-6 space-y-8 animate-in slide-in-from-left duration-500">
         <div className="flex items-center space-x-2 px-2">
           <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-            <span className="text-white font-bold text-xl">L</span>
+            <span className="text-white font-bold text-xl">DU</span>
           </div>
-          <span className="text-2xl font-bold tracking-tight">Luminous</span>
+          <span className="text-2xl font-bold tracking-tight">DoUp</span>
         </div>
 
         <nav className="flex-1 space-y-2">
