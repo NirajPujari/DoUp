@@ -23,7 +23,7 @@ export interface Task {
   annualDate?: { month: number; day: number }; // For annual tasks (0-based month)
   
   // Progress/Completion tracking
-  completedDates?: string[]; // Array of YYYY-MM-DD strings
+  completedDate?: string;   // YYYY-MM-DD string — the date this task was completed
   lastRolloverDate?: string; // The last date this task was auto-forwarded to (YYYY-MM-DD)
   
   createdAt: Date;

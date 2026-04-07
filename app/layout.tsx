@@ -3,20 +3,16 @@ import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Luminous Tasks",
   description: "A premium, minimal task management system.",
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Luminous Tasks",
-  },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Luminous Tasks" },
 };
 
 export const viewport: Viewport = {
@@ -27,18 +23,16 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn("h-full", "font-sans", geist.variable)}>
+    <html lang="en" className={cn("h-full", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary`}>
-        <main className="relative flex min-h-screen flex-col">
-          {children}
-        </main>
-        <Toaster position="top-center" richColors />
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <main className="relative flex min-h-screen flex-col">
+            {children}
+          </main>
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

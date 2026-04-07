@@ -1,11 +1,20 @@
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+
+export interface SessionPayload extends JWTPayload {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  };
+  expires: Date | string;
+}
 
 const secretKey = process.env.JWT_SECRET || 'fallback-secret-for-development';
 const key = new TextEncoder().encode(secretKey);
 
-export async function encrypt(payload: any) {
+export async function encrypt(payload: SessionPayload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -13,11 +22,11 @@ export async function encrypt(payload: any) {
     .sign(key);
 }
 
-export async function decrypt(input: string): Promise<any> {
+export async function decrypt(input: string): Promise<SessionPayload> {
   const { payload } = await jwtVerify(input, key, {
     algorithms: ['HS256'],
   });
-  return payload;
+  return payload as unknown as SessionPayload;
 }
 
 export async function login(user: { id: string; email: string; name: string }) {
@@ -38,7 +47,7 @@ export async function getSession() {
   if (!session) return null;
   try {
     return await decrypt(session);
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -55,7 +64,7 @@ export async function updateSession(request: NextRequest) {
     name: 'session',
     value: await encrypt(parsed),
     httpOnly: true,
-    expires: parsed.expires,
+    expires: parsed.expires as Date,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax'
   });

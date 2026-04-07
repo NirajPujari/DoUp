@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getSession } from '@/lib/auth';
-import { ObjectId } from 'mongodb';
 import { isTaskVisibleOnDate, dateToString } from '@/lib/task-logic';
+import { Task } from '@/types';
 
 export async function GET(request: Request) {
   try {
@@ -15,13 +15,14 @@ export async function GET(request: Request) {
 
     const db = await getDb();
     const tasksRaw = await db.collection('tasks').find({ userId: session.user.id }).toArray();
-    
-    // Filter tasks based on logic (rollover, recurrence)
-    const visibleTasks = tasksRaw.filter(task => isTaskVisibleOnDate(task as any, targetDate));
+    const visibleTasks = tasksRaw.filter(task => isTaskVisibleOnDate(task as Task, targetDate));
 
     return NextResponse.json({ tasks: visibleTasks });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
   }
 }
 
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const taskData = await request.json();
-    const { title, description, time, progress, type, date, daysOfWeek, annualDate } = taskData;
+    const { title, description, time, type, date, daysOfWeek, annualDate } = taskData;
 
     if (!title || !type) {
       return NextResponse.json({ error: 'Title and Type are required' }, { status: 400 });
@@ -43,18 +44,20 @@ export async function POST(request: Request) {
       title,
       description: description || '',
       time: time || '00:00',
-      progress: progress || 0,
       type,
       date: date ? new Date(date) : undefined,
       daysOfWeek: daysOfWeek || [],
       annualDate: annualDate || undefined,
-      completedDates: [],
+      completedDate: "",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
     return NextResponse.json({ message: 'Task created', taskId: result.insertedId }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
   }
 }

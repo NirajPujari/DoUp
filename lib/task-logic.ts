@@ -1,5 +1,5 @@
 import { Task, Holiday } from "@/types";
-import { format, isSameDay, startOfDay, getDay, getMonth, getDate, differenceInDays } from "date-fns";
+import { format, isSameDay, startOfDay, getDay, getMonth, getDate } from "date-fns";
 
 /**
  * Normalizes a date to YYYY-MM-DD string for comparison.
@@ -18,19 +18,18 @@ export function isTaskVisibleOnDate(task: Task, targetDate: Date): boolean {
   const targetMonth = getMonth(targetDate); // 0-11
   const targetDayOfMonth = getDate(targetDate);
 
-  // If already completed on this target date, it stays in the list (as completed)
-  const isCompletedOnTarget = task.completedDates?.includes(targetStr);
+  // If already completed on this target date, keep it visible (as completed)
+  const isCompletedOnTarget = task.completedDate === targetStr;
   if (isCompletedOnTarget) return true;
 
   // Case 1: One-time tasks
   if (task.type === 'one-time' && task.date) {
-    const taskDateStr = dateToString(task.date);
     const taskDate = startOfDay(new Date(task.date));
     const targetStart = startOfDay(targetDate);
 
     // Show if it's the exact day OR if it's from the past and NOT completed yet
     if (isSameDay(taskDate, targetStart)) return true;
-    if (taskDate < targetStart && !task.completedDates?.length) {
+    if (taskDate < targetStart && !task.completedDate) {
        // Only roll forward to TODAY, not to every future date in the calendar
        const todayStr = dateToString(new Date());
        return targetStr === todayStr;
@@ -53,7 +52,7 @@ export function isTaskVisibleOnDate(task: Task, targetDate: Date): boolean {
       // For now, let's just check if it was NOT completed on the current day's calendar
       // A simpler rollover: if not done yesterday, move to today.
       // Requirement: "forward it to the next day"
-      // We'll trust the "progress" or "completedDates" to handle this.
+      // We'll trust the "completedDate" to handle this.
       return false; // Actually, let's keep it simple: if its due, show it.
     }
   }
