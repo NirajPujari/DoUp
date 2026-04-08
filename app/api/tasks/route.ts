@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       daysOfWeek: daysOfWeek || [],
       annualDate: annualDate || undefined,
       completedDate: "",
+      completedDates: type === 'repeating' ? [] : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

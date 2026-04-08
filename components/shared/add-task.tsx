@@ -9,6 +9,7 @@ import {
   Loader2,
   RepeatIcon,
   AlignLeft,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -45,14 +46,18 @@ const TASK_TYPES: { value: TaskType; label: string; icon: React.ReactNode }[] =
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function AddTask({ defaultDate, onSuccess }: { defaultDate?: string, onSuccess?: () => void } = {}) {
+export function AddTask({
+  defaultDate,
+  onSuccess,
+  taskType,
+}: { defaultDate?: string; onSuccess?: () => void; taskType?: TaskType } = {}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<TaskType>("one-time");
+  const [type, setType] = useState<TaskType>(taskType || "one-time");
   const [time, setTime] = useState("09:00");
   const [date, setDate] = useState(
     defaultDate ?? new Date().toISOString().split("T")[0],
@@ -123,9 +128,12 @@ export function AddTask({ defaultDate, onSuccess }: { defaultDate?: string, onSu
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   };
+  const filteredTasks = taskType
+    ? TASK_TYPES.filter((t) => t.value === taskType)
+    : TASK_TYPES;
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange}>
+    <Drawer open={open} onOpenChange={handleOpenChange} dismissible={false}>
       <DrawerTrigger asChild>
         <Button className="fixed bottom-32 right-6 h-14 w-14 rounded-full z-50 shadow-2xl md:static md:h-14 md:w-auto md:px-6 md:rounded-2xl flex items-center gap-2 duration-500 hover:scale-105 active:scale-95 transition-all">
           <Plus className="h-5 w-5 shrink-0" />
@@ -133,20 +141,27 @@ export function AddTask({ defaultDate, onSuccess }: { defaultDate?: string, onSu
         </Button>
       </DrawerTrigger>
 
-      <DrawerContent className="bg-background/98 backdrop-blur-2xl border-t border-white/10">
+      <DrawerContent className="bg-background/98 backdrop-blur-2xl mt-0! h-dvh max-h-dvh! rounded-none! border-none [&>div.bg-muted.mx-auto.mt-4]:hidden">
         <div
-          className="mx-auto w-full max-w-lg flex flex-col"
-          style={{ maxHeight: "90dvh" }}
+          className="mx-auto w-full max-w-lg flex flex-col h-full relative"
         >
-          <div className="px-6 pt-2">
+          <div className="px-6 pt-6 pb-2">
             <DrawerHeader className="px-0 pb-0">
-              <DrawerTitle className="text-3xl font-black tracking-tight">
+              <DrawerTitle className="text-3xl font-black tracking-tight pr-10">
                 New Task
               </DrawerTitle>
               <DrawerDescription className="font-semibold text-muted-foreground mt-1">
                 Plan your next move.
               </DrawerDescription>
             </DrawerHeader>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-6 right-6 h-10 w-10 shrink-0 rounded-full bg-muted/30 hover:bg-muted"
+              onClick={() => setOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
 
           {/* Scrollable form */}
@@ -189,22 +204,29 @@ export function AddTask({ defaultDate, onSuccess }: { defaultDate?: string, onSu
                 Frequency
               </Label>
               <div className="flex gap-2">
-                {TASK_TYPES.map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => setType(t.value)}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm border transition-all duration-200",
-                      type === t.value
-                        ? "bg-primary text-primary-foreground border-primary shadow-lg scale-[1.03]"
-                        : "bg-muted/30 border-muted/50 text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                    )}
-                  >
-                    {t.icon}
-                    <span>{t.label}</span>
-                  </button>
-                ))}
+                {filteredTasks.map((t) => {
+                  const isActive = type === t.value;
+                  const isDisabled = !!taskType;
+
+                  return (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setType(t.value)}
+                      disabled={isDisabled}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm border transition-all duration-200",
+                        isActive
+                          ? "bg-primary text-primary-foreground border-primary shadow-lg scale-[1.03]"
+                          : "bg-muted/30 border-muted/50 text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        isDisabled && "cursor-not-allowed opacity-70",
+                      )}
+                    >
+                      {t.icon}
+                      <span>{t.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

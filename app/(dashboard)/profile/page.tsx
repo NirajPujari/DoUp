@@ -4,9 +4,20 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { LogOut, Sun, Moon, User, Pencil, Check, X } from "lucide-react";
+import {
+  LogOut,
+  Sun,
+  Moon,
+  User,
+  Pencil,
+  Check,
+  X,
+  RepeatIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface UserProfile {
   id: string;
@@ -97,11 +108,12 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-12 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
-
       {/* Avatar + Name */}
       <div className="flex flex-col items-center space-y-5 text-center">
         <div className="h-24 w-24 rounded-3xl bg-primary flex items-center justify-center shadow-2xl shadow-primary/30 ring-4 ring-primary/10">
-          <span className="text-primary-foreground text-3xl font-black tracking-tight">{initials}</span>
+          <span className="text-primary-foreground text-3xl font-black tracking-tight">
+            {initials}
+          </span>
         </div>
 
         {/* Editable name */}
@@ -154,9 +166,37 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Manage Features */}
+      <Link
+        href="/profile/repetitive"
+        className="flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-200 border-muted/40 bg-muted/10 hover:border-muted/70 hover:bg-muted/20 hover:scale-[1.02]"
+      >
+        <div
+          className={cn(
+            "h-12 w-12 rounded-xl border flex items-center justify-center shadow-md",
+            theme === "light"
+              ? "bg-white border-zinc-200"
+              : "bg-zinc-900 border-zinc-700",
+          )}
+        >
+          <RepeatIcon className="h-5 w-5 text-primary" />
+        </div>
+
+        <div className="flex-1">
+          <h3 className="text-sm font-bold text-foreground">
+            Repetitive Tasks
+          </h3>
+          <p className="text-xs font-semibold text-muted-foreground mt-0.5">
+            Manage your recurring habits
+          </p>
+        </div>
+      </Link>
+
       {/* Theme Switcher */}
       <div className="glass-morphism rounded-3xl p-6 space-y-4">
-        <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Appearance</h2>
+        <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+          Appearance
+        </h2>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setTheme("light")}
@@ -169,7 +209,9 @@ export default function ProfilePage() {
             <div className="h-12 w-12 rounded-xl bg-white border border-zinc-200 flex items-center justify-center shadow-md">
               <Sun className="h-5 w-5 text-amber-500" />
             </div>
-            <span className={`text-sm font-bold ${theme === "light" ? "text-primary" : "text-muted-foreground"}`}>
+            <span
+              className={`text-sm font-bold ${theme === "light" ? "text-primary" : "text-muted-foreground"}`}
+            >
               Light
             </span>
           </button>
@@ -185,7 +227,9 @@ export default function ProfilePage() {
             <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center justify-center shadow-md">
               <Moon className="h-5 w-5 text-indigo-400" />
             </div>
-            <span className={`text-sm font-bold ${theme === "dark" ? "text-primary" : "text-muted-foreground"}`}>
+            <span
+              className={`text-sm font-bold ${theme === "dark" ? "text-primary" : "text-muted-foreground"}`}
+            >
               Dark
             </span>
           </button>

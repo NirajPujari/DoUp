@@ -34,15 +34,25 @@ export async function PATCH(
 
     // completedDate is stored as a plain string (YYYY-MM-DD)
     // Set it when completing, remove it when un-completing
-    const updateOps = completedDate
-      ? isCompleted
-        ? { $set: { completedDate, updatedAt: new Date() } }
-        : { $unset: { completedDate: "" }, $set: { updatedAt: new Date() } }
-      : { $set: { updatedAt: new Date() } };
+    let updateOps;
+    
+    if (task.type === 'repeating') {
+      updateOps = completedDate
+        ? isCompleted
+          ? { $addToSet: { completedDates: completedDate }, $set: { updatedAt: new Date() } }
+          : { $pull: { completedDates: completedDate }, $set: { updatedAt: new Date() } }
+        : { $set: { updatedAt: new Date() } };
+    } else {
+      updateOps = completedDate
+        ? isCompleted
+          ? { $set: { completedDate, updatedAt: new Date() } }
+          : { $unset: { completedDate: "" }, $set: { updatedAt: new Date() } }
+        : { $set: { updatedAt: new Date() } };
+    }
 
     await db.collection("tasks").updateOne(
       { _id: new ObjectId(id) },
-      updateOps,
+      updateOps as any,
     );
 
     return NextResponse.json({ message: "Task updated" });

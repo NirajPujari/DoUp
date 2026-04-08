@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 import { Trash2, Clock, Calendar, Repeat, Stars } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Task } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface TaskCardProps {
   task: Task;
   targetDateStr: string;
+  viewOnly?: boolean;
   onDelete?: () => void;
   onToggle?: (id: string, checked: boolean) => void;
 }
@@ -18,16 +19,20 @@ interface TaskCardProps {
 export function TaskCard({
   task,
   targetDateStr,
+  viewOnly,
   onDelete,
   onToggle,
 }: TaskCardProps) {
   const [isCompleted, setIsCompleted] = useState(
-    task.completedDate === targetDateStr,
+    (task.type === "repeating"
+      ? task.completedDates?.includes(targetDateStr) || false
+      : task.completedDate === targetDateStr) && !viewOnly,
   );
   const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
 
   const handleToggle = async (checked: boolean) => {
+    if (viewOnly) return;
     setIsCompleted(checked);
     try {
       const res = await fetch(`/api/tasks/${task._id}`, {
@@ -77,7 +82,7 @@ export function TaskCard({
 
   return (
     <div
-      onClick={() => handleToggle(!isCompleted)}
+      onClick={() => !viewOnly && handleToggle(!isCompleted)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === " " && handleToggle(!isCompleted)}
@@ -89,7 +94,13 @@ export function TaskCard({
     >
       <div className="flex items-start justify-between gap-2 md:gap-4">
         <div className="flex items-start space-x-2 sm:space-x-3 md:space-x-4">
-          <div className="pt-1 animate-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+          <div
+            className={cn(
+              "pt-1 animate-in zoom-in duration-300",
+              viewOnly && "hidden",
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
             <Checkbox
               id={task._id?.toString()}
               checked={isCompleted}
@@ -131,26 +142,15 @@ export function TaskCard({
         </div>
 
         <button
-          onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowConfirm(true);
+          }}
           className="p-1.5 sm:p-2 md:p-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg md:rounded-xl transition-all flex items-center justify-center shrink-0"
         >
           <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-7 lg:w-7" />
         </button>
       </div>
-
-      {!isCompleted && task.progress > 0 && (
-        <div className="mt-2 md:mt-4 space-y-1 animate-in fade-in duration-500">
-          <div className="flex justify-between text-[9px] sm:text-[10px] md:text-[11px] font-semibold md:font-bold uppercase tracking-wide md:tracking-widest text-primary">
-            <span>Progress</span>
-            <span>{task.progress}%</span>
-          </div>
-
-          <Progress
-            value={task.progress}
-            className="h-1 md:h-1.5 rounded-full bg-primary/10"
-          />
-        </div>
-      )}
 
       {isCompleted && (
         <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 flex items-center justify-center text-primary/40 animate-in zoom-in-50 spin-in-12 duration-700 pointer-events-none">

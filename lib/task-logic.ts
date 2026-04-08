@@ -19,7 +19,9 @@ export function isTaskVisibleOnDate(task: Task, targetDate: Date): boolean {
   const targetDayOfMonth = getDate(targetDate);
 
   // If already completed on this target date, keep it visible (as completed)
-  const isCompletedOnTarget = task.completedDate === targetStr;
+  const isCompletedOnTarget = task.type === 'repeating' 
+    ? (task.completedDates && task.completedDates.includes(targetStr))
+    : task.completedDate === targetStr;
   if (isCompletedOnTarget) return true;
 
   // Case 1: One-time tasks

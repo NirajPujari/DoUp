@@ -52,7 +52,9 @@ export default function DashboardPage() {
   }, [dateStr]);
 
   const completed = tasks.filter((t) =>
-    t.completedDate === dateStr,
+    t.type === "repeating"
+      ? t.completedDates?.includes(dateStr)
+      : t.completedDate === dateStr,
   ).length;
 
   const progress = tasks.length > 0 ? completed / tasks.length : 0;
@@ -160,6 +162,12 @@ export default function DashboardPage() {
                     setTasks((prev) =>
                       prev.map((t) => {
                         if (String(t._id) !== updatedTaskId) return t;
+                        if (t.type === "repeating") {
+                          const dates = new Set(t.completedDates || []);
+                          if (checked) dates.add(dateStr);
+                          else dates.delete(dateStr);
+                          return { ...t, completedDates: Array.from(dates) };
+                        }
                         return {
                           ...t,
                           completedDate: checked ? dateStr : undefined,

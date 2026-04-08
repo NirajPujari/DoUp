@@ -24,6 +24,7 @@ export interface Task {
   
   // Progress/Completion tracking
   completedDate?: string;   // YYYY-MM-DD string — the date this task was completed
+  completedDates?: string[]; // Array of YYYY-MM-DD strings for repetitive tasks
   lastRolloverDate?: string; // The last date this task was auto-forwarded to (YYYY-MM-DD)
   
   createdAt: Date;
