@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { AddTask } from "@/components/shared/add-task";
 import { TaskCard } from "@/components/shared/task-card";
@@ -28,28 +28,29 @@ export default function DashboardPage() {
   const today = format(new Date(), "EEEE, do MMMM");
   const dateStr = dateToString(new Date());
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const [res1, res2] = await Promise.all([
-          fetch(`/api/tasks?date=${dateStr}`),
-          fetch(`/api/auth/me`),
-        ]);
+  const fetchTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [res1, res2] = await Promise.all([
+        fetch(`/api/tasks?date=${dateStr}`),
+        fetch(`/api/auth/me`),
+      ]);
 
-        const data = await res1.json();
-        const data2 = await res2.json();
+      const data = await res1.json();
+      const data2 = await res2.json();
 
-        setSession(data2.user);
-        setTasks(Array.isArray(data.tasks) ? data.tasks : []);
-      } catch {
-        console.error("Failed to fetch tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
+      setSession(data2.user);
+      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+    } catch {
+      console.error("Failed to fetch tasks");
+    } finally {
+      setLoading(false);
+    }
   }, [dateStr]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const completed = tasks.filter((t) =>
     t.type === "repeating"
@@ -158,6 +159,9 @@ export default function DashboardPage() {
                   key={index}
                   task={task}
                   targetDateStr={dateStr}
+                  onDelete={() => {
+                    fetchTasks()
+                  }}
                   onToggle={(updatedTaskId, checked) => {
                     setTasks((prev) =>
                       prev.map((t) => {
@@ -183,10 +187,10 @@ export default function DashboardPage() {
 
       {/* Add Task */}
       <div className="md:hidden">
-        <AddTask />
+        <AddTask onSuccess={fetchTasks}/>
       </div>
       <div className="hidden md:block fixed bottom-12 right-12">
-        <AddTask />
+        <AddTask onSuccess={fetchTasks}/>
       </div>
     </div>
   );
