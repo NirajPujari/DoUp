@@ -13,9 +13,11 @@ import {
   Check,
   X,
   RepeatIcon,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +33,7 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -99,6 +102,25 @@ export default function ProfilePage() {
     );
   }
 
+  const handleNotificationToggle = async (checked: boolean) => {
+    setNotificationsEnabled(checked);
+    console.log(checked);
+    try {
+      // const res = await fetch("/api/auth/me", {
+      //   method: "PATCH",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ notificationsEnabled: checked }),
+      // });
+      // if (!res.ok) throw new Error("Failed to update notifications");
+      // const data = await res.json();
+      // setUser(data.user);
+      toast.success("Notifications updated!");
+      router.refresh();
+    } catch {
+      toast.error("Failed to update notifications");
+    }
+  };
+
   const initials = user?.name
     ?.split(" ")
     .map((n) => n[0])
@@ -107,7 +129,7 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-12 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
+    <div className="max-w-xl mx-auto px-4 py-12 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
       {/* Avatar + Name */}
       <div className="flex flex-col items-center space-y-5 text-center">
         <div className="h-24 w-24 rounded-3xl bg-primary flex items-center justify-center shadow-2xl shadow-primary/30 ring-4 ring-primary/10">
@@ -167,30 +189,71 @@ export default function ProfilePage() {
       </div>
 
       {/* Manage Features */}
-      <Link
-        href="/profile/repetitive"
-        className="flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-200 border-muted/40 bg-muted/10 hover:border-muted/70 hover:bg-muted/20 hover:scale-[1.02]"
-      >
-        <div
-          className={cn(
-            "h-12 w-12 rounded-xl border flex items-center justify-center shadow-md",
-            theme === "light"
-              ? "bg-white border-zinc-200"
-              : "bg-zinc-900 border-zinc-700",
-          )}
-        >
-          <RepeatIcon className="h-5 w-5 text-primary" />
-        </div>
+      <div className="glass-morphism rounded-3xl p-6 space-y-4">
+        <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+          Manage Features
+        </h2>
+        <div className="flex flex-col gap-3 w-full">
+          {/* Notifications Toggle */}
+          <label
+            htmlFor="notifications"
+            className="flex items-center justify-between gap-4 p-5 rounded-2xl border-2 transition-all duration-200 border-muted/40 bg-muted/10 hover:border-muted/70 hover:bg-muted/20 cursor-pointer hover:scale-[1.01] w-full"
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className={cn(
+                  "h-12 w-12 rounded-xl border flex items-center justify-center shadow-md",
+                  theme === "light"
+                    ? "bg-white border-zinc-200"
+                    : "bg-zinc-900 border-zinc-700"
+                )}
+              >
+                <Bell className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Task Reminders
+                </h3>
+                <p className="text-xs font-semibold text-muted-foreground mt-0.5">
+                  Get notified for upcoming tasks
+                </p>
+              </div>
+            </div>
+            <Checkbox
+              id="notifications"
+              checked={notificationsEnabled}
+              onCheckedChange={handleNotificationToggle}
+              className="h-6 w-6 rounded-md data-[state=checked]:bg-primary"
+            />
+          </label>
 
-        <div className="flex-1">
-          <h3 className="text-sm font-bold text-foreground">
-            Repetitive Tasks
-          </h3>
-          <p className="text-xs font-semibold text-muted-foreground mt-0.5">
-            Manage your recurring habits
-          </p>
+          {/* Repetitive Tasks Link */}
+          <Link
+            href="/profile/repetitive"
+            className="flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-200 border-muted/40 bg-muted/10 hover:border-muted/70 hover:bg-muted/20 hover:scale-[1.01] w-full"
+          >
+            <div
+              className={cn(
+                "h-12 w-12 rounded-xl border flex items-center justify-center shadow-md",
+                theme === "light"
+                  ? "bg-white border-zinc-200"
+                  : "bg-zinc-900 border-zinc-700",
+              )}
+            >
+              <RepeatIcon className="h-5 w-5 text-primary" />
+            </div>
+
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-foreground">
+                Repetitive Tasks
+              </h3>
+              <p className="text-xs font-semibold text-muted-foreground mt-0.5">
+                Manage your recurring habits
+              </p>
+            </div>
+          </Link>
         </div>
-      </Link>
+      </div>
 
       {/* Theme Switcher */}
       <div className="glass-morphism rounded-3xl p-6 space-y-4">

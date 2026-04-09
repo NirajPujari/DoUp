@@ -24,7 +24,7 @@ export default function CalendarPage() {
   const fetchTasks = async (targetDate: Date) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/tasks?date=${dateToString(targetDate)}`);
+      const res = await fetch(`/api/tasks?date=${dateToString(targetDate)}&type=one-time`);
       const data = await res.json();
       setTasks(Array.isArray(data.tasks) ? data.tasks : []);
     } catch {
@@ -116,7 +116,6 @@ export default function CalendarPage() {
             </div>
           ) : (
             tasks
-              .sort((a, b) => a.time.localeCompare(b.time))
               .map((task, index) => (
                 <TaskCard
                   key={index}

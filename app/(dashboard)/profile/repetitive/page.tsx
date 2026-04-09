@@ -14,7 +14,7 @@ export default function RepetitiveTasksPage() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/tasks/repetitive`);
+      const res = await fetch(`/api/tasks?type=repeating`);
       const data = await res.json();
       setTasks(Array.isArray(data.tasks) ? data.tasks : []);
     } catch {

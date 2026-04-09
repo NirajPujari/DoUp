@@ -39,6 +39,8 @@ export default function DashboardPage() {
       const data = await res1.json();
       const data2 = await res2.json();
 
+      console.log(data)
+
       setSession(data2.user);
       setTasks(Array.isArray(data.tasks) ? data.tasks : []);
     } catch {
@@ -153,7 +155,6 @@ export default function DashboardPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 pb-12">
             {tasks
-              .sort((a, b) => a.time.localeCompare(b.time))
               .map((task, index) => (
                 <TaskCard
                   key={index}
