@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Calendar, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,10 +21,10 @@ export function Sidebar() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-72 flex-col border-r bg-card/40 backdrop-blur-md sticky top-0 h-screen p-6 space-y-8 animate-in slide-in-from-left duration-500">
         <div className="flex items-center space-x-2 px-2">
-          <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-            <span className="text-white font-bold text-xl">DU</span>
+          <div className="h-24 w-24 rounded-2xl items-center justify-center shadow-lg overflow-hidden">
+            <Image src="/logo.png" alt="DoUp Logo" width={100} height={100} className="w-full h-full object-cover" />
           </div>
-          <span className="text-2xl font-bold tracking-tight">DoUp</span>
+          <span className="text-4xl font-bold tracking-tight">DoUp</span>
         </div>
 
         <nav className="flex-1 space-y-2">

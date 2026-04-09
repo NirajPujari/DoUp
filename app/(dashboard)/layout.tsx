@@ -13,6 +13,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+
   return (
     <div className="flex min-h-screen bg-background transition-colors duration-500">
       <Sidebar />

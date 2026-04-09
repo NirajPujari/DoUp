@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-linear-to-br from-indigo-50/50 via-white to-purple-50/50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
       <div className="w-full max-w-md space-y-8 glass-morphism p-8 rounded-3xl shadow-2xl border border-white/20 animate-in fade-in zoom-in duration-500">
-        <div className="text-center">
+        <div className="text-center flex flex-col items-center">
+          <Image src="/logo.png" alt="DoUp Logo" width={80} height={80} className="mb-4 drop-shadow-2xl" />
           <h1 className="text-3xl font-bold tracking-tight text-foreground">DoUp</h1>
           <p className="mt-2 text-sm text-muted-foreground">Sign in to manage your day</p>
         </div>
