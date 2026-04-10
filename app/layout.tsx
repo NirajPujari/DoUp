@@ -35,6 +35,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={cn("h-full", "font-sans", geist.variable)} suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <main className="relative flex min-h-screen flex-col">
